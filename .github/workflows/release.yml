@@ -136,37 +136,72 @@ jobs:
           echo "Release assets:"
           ls -la release-assets/
 
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [ -n "$PREVIOUS_TAG" ]; then
+            echo "Generating changelog from $PREVIOUS_TAG to HEAD"
+            CHANGELOG=$(git log --oneline --format="- %s" ${PREVIOUS_TAG}..HEAD 2>/dev/null || echo "- Initial release")
+          else
+            echo "No previous tag found, this is the initial release"
+            CHANGELOG="- Initial release"
+          fi
+          
+          # Output to GitHub env
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          
+          echo "Generated changelog:"
+          echo "$CHANGELOG"
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: release-assets/*
+          name: promdrop ${{ env.VERSION }}
           body: |
-            ## 🚀 Release promdrop ${{ env.VERSION }}
+            [promdrop](https://github.com/younsl/promdrop) is a CLI tool to generate prometheus metric-drop config for each prometheus job.
 
-            [promdrop](https://github.com/younsl/promdrop) is a tool to generate prometheus metric-drop config.
+            ## Installation
 
-            ### Installation
+            promdrop can be installed using Go binary or container image with cross-platform support.
 
-            #### Go Binary
+            ### Binary Installation
 
-            promdrop supports cross-platform binary distribution and docker image. Supported platforms are:
+            Download the appropriate binary for your platform:
 
-            - **Linux AMD64**: `promdrop-linux-amd64.tar.gz`
-            - **Linux ARM64**: `promdrop-linux-arm64.tar.gz` 
-            - **macOS Intel**: `promdrop-darwin-amd64.tar.gz`
-            - **macOS Apple Silicon**: `promdrop-darwin-arm64.tar.gz`
+            | # | platform | architecture | binary |
+            | --- | --- | --- | --- |
+            | 1 | linux | amd64 | `promdrop-linux-amd64.tar.gz` |
+            | 2 | linux | arm64 | `promdrop-linux-arm64.tar.gz` |
+            | 3 | darwin | amd64 | `promdrop-darwin-amd64.tar.gz` |
+            | 4 | darwin | arm64 | `promdrop-darwin-arm64.tar.gz` |
+
+            Installation procedure example for linux-amd64:
+
+            ```bash
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ env.VERSION }}/promdrop-linux-amd64.tar.gz
+            tar -xzf promdrop-linux-amd64.tar.gz
+            chmod +x promdrop-linux-amd64
+            sudo mv promdrop-linux-amd64 /usr/local/bin/promdrop
+            ```
             
-            #### Container Image
+            ### Container Image
 
-            promdrop is available as docker image on [GitHub Container Registry](https://github.com/users/younsl/packages/container/package/promdrop).
+            promdrop is available as a container image on [GitHub Container Registry](https://github.com/users/younsl/packages/container/package/promdrop) with cross-platform support.
 
             ```bash
             docker pull ghcr.io/${{ github.repository }}:${{ env.VERSION }}
+            docker run --name promdrop --rm ghcr.io/${{ github.repository }}:${{ env.VERSION }} --help
             ```
             
-            ### Changes
+            ## Changes
 
-            $(git log --oneline --format="- %s" $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")..HEAD 2>/dev/null || echo "- Initial release")
+            ${{ env.CHANGELOG }}
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
