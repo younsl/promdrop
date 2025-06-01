@@ -23,6 +23,11 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
 # Runtime stage
 FROM scratch
 
+# Add metadata labels for GitHub Container Registry
+LABEL org.opencontainers.image.source=https://github.com/younsl/promdrop
+LABEL org.opencontainers.image.description="A tool to generate prometheus metric-drop config"
+LABEL org.opencontainers.image.licenses=MIT
+
 # Copy CA certificates for HTTPS requests
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
