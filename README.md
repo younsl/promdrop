@@ -1,5 +1,7 @@
 <img src="./docs/assets/1.webp" alt="Promdrop" width="64" height="64">
 
+[![Release](https://img.shields.io/github/v/release/younsl/promdrop?style=flat-square&color=black&logo=github&logoColor=white)](https://github.com/younsl/promdrop/releases)
+[![Container Image](https://img.shields.io/github/v/release/younsl/promdrop?style=flat-square&color=black&logo=docker&logoColor=white&label=ghcr.io)](https://github.com/users/younsl/packages/container/package/promdrop)
 [![Go Version](https://img.shields.io/badge/Go-1.24-blue?style=flat-square&color=black&logo=go&logoColor=white)](https://golang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square&color=black)](https://opensource.org/licenses/MIT)
 
