@@ -139,28 +139,6 @@ jobs:
           echo "Release assets:"
           ls -la release-assets/
 
-      - name: Generate changelog
-        id: changelog
-        run: |
-          # Get previous tag
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          
-          if [ -n "$PREVIOUS_TAG" ]; then
-            echo "Generating changelog from $PREVIOUS_TAG to HEAD"
-            CHANGELOG=$(git log --oneline --format="- %s" ${PREVIOUS_TAG}..HEAD 2>/dev/null || echo "- Initial release")
-          else
-            echo "No previous tag found, this is the initial release"
-            CHANGELOG="- Initial release"
-          fi
-          
-          # Output to GitHub env
-          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-          echo "$CHANGELOG" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-          
-          echo "Generated changelog:"
-          echo "$CHANGELOG"
-
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -184,13 +162,17 @@ jobs:
             | 3 | darwin | amd64 | `promdrop-darwin-amd64.tar.gz` |
             | 4 | darwin | arm64 | `promdrop-darwin-arm64.tar.gz` |
 
-            Installation procedure example for linux-amd64:
+            Installation procedure for your platform dynamically:
 
             ```bash
-            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ env.VERSION }}/promdrop-linux-amd64.tar.gz
-            tar -xzf promdrop-linux-amd64.tar.gz
-            chmod +x promdrop-linux-amd64
-            sudo mv promdrop-linux-amd64 /usr/local/bin/promdrop
+            # Get arch and os currently running on the machine
+            ARCH=$(arch)
+            OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+
+            curl -LO https://github.com/${{ github.repository }}/releases/download/${{ env.VERSION }}/promdrop-${OS}-${ARCH}.tar.gz
+            tar -xzf promdrop-${OS}-${ARCH}.tar.gz
+            chmod +x promdrop-${OS}-${ARCH}
+            sudo mv promdrop-${OS}-${ARCH} /usr/local/bin/promdrop
             ```
             
             ### Container Image
@@ -201,10 +183,7 @@ jobs:
             docker pull ghcr.io/${{ github.repository }}:${{ env.VERSION }}
             docker run --name promdrop --rm ghcr.io/${{ github.repository }}:${{ env.VERSION }} --help
             ```
-            
-            ## Changes
-
-            ${{ env.CHANGELOG }}
+          generate-release-notes: true
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
