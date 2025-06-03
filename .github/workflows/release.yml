@@ -183,7 +183,7 @@ jobs:
             docker pull ghcr.io/${{ github.repository }}:${{ env.VERSION }}
             docker run --name promdrop --rm ghcr.io/${{ github.repository }}:${{ env.VERSION }} --help
             ```
-          generate-release-notes: true
+          generate_release_notes: true
           draft: false
           prerelease: false
           token: ${{ secrets.GITHUB_TOKEN }}
